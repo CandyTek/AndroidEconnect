@@ -1,7 +1,7 @@
 package com.lzq.econnect.base;
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.lzq.econnect.MyApp;
 import com.lzq.econnect.manager.EventManager;

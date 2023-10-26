@@ -1,6 +1,8 @@
 package com.lzq.econnect.ui.activity;
 
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
+
+import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -12,7 +14,6 @@ import com.lzq.econnect.base.BaseBean;
 import com.lzq.econnect.ui.helper.FeedbackHelper;
 import com.lzq.econnect.ui.helper.FeedbackView;
 
-
 import butterknife.Bind;
 import butterknife.OnClick;
 
@@ -21,79 +22,89 @@ import butterknife.OnClick;
  * Created by lzq
  */
 
-public class FeedbackActivity extends BaseActivity implements FeedbackView{
-    @Bind(R.id.toolbar)
-    Toolbar toolbar;
-    @Bind(R.id.rg_assess)
-    RadioGroup rgAssess;
-    @Bind(R.id.et_feedback)
-    EditText etFeedback;
+public class FeedbackActivity extends BaseActivity implements FeedbackView {
 
-    private int feedback_type = 1;
+	private int feedback_type = 1;
+	private Toolbar toolbar;
+	private RadioGroup rgAssess;
+	private android.widget.RadioButton rgAssessOne;
+	private android.widget.RadioButton rgAssessTwo;
+	private android.widget.RadioButton rgAssessThree;
+	private EditText etFeedback;
+	private android.widget.Button btnSubmit;
 
-    @Override
-    protected int setContentViewId() {
-        return R.layout.activity_feedback;
-    }
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+	}
+	@Override
+	protected int setContentViewId() {
+		return R.layout.activity_feedback;
+	}
 
-    @Override
-    protected void doBusiness() {
-        initToolbar();
+	@Override
+	protected void doBusiness() {
+		initView();
+		initToolbar();
 
-         /*设置radioGrop监听*/
-        rgAssess.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                switch (i) {
-                    case R.id.rg_assess_one:
-                        feedback_type = 1;
-                        break;
-                    case R.id.rg_assess_two:
-                        feedback_type = 2;
-                        break;
-                    case R.id.rg_assess_three:
-                        feedback_type = 3;
-                        break;
-                }
-            }
-        });
+		/*设置radioGrop监听*/
+		rgAssess.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(RadioGroup radioGroup,int i) {
+				if (i == R.id.rg_assess_one) {
+					feedback_type = 1;
+				} else if (i == R.id.rg_assess_two) {
+					feedback_type = 2;
+				} else if (i == R.id.rg_assess_three) {
+					feedback_type = 3;
+				}
+			}
+		});
 
-    }
+	}
 
-    @SuppressWarnings("unused")
-    @OnClick(R.id.btn_submit)
-    public void submitClick(){
-        FeedbackHelper adviceHelper = new FeedbackHelper(this);
-        adviceHelper.postData(feedback_type, etFeedback.getText().toString());
-    }
+	@SuppressWarnings("unused")
+	public void submitClick(View view) {
+		FeedbackHelper adviceHelper = new FeedbackHelper(this);
+		adviceHelper.postData(feedback_type,etFeedback.getText().toString());
+	}
 
+	private void initToolbar() {
 
-    private void initToolbar(){
+		setSupportActionBar(toolbar);
+		if (getSupportActionBar() != null) {
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+			getSupportActionBar().setTitle("意见反馈");
+		}
 
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null){
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("意见反馈");
-        }
+		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				finish();
+			}
+		});
+	}
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-    }
+	@Override
+	public void feedbackSuccess(BaseBean baseBean) {
+		if (isFinishing() || isDestroyed()) return;
+		Toast.makeText(this,"提交成功",Toast.LENGTH_SHORT).show();
+	}
 
-    @Override
-    public void feedbackSuccess(BaseBean baseBean) {
-        if (isFinishing() || isDestroyed()) return;
-        Toast.makeText(this, "提交成功", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void feedbackFailed(String msg) {
-        if (isFinishing() || isDestroyed()) return;
-        if (msg == null) return;
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-    }
+	@Override
+	public void feedbackFailed(String msg) {
+		if (isFinishing() || isDestroyed()) return;
+		if (msg == null) return;
+		Toast.makeText(this,msg,Toast.LENGTH_SHORT).show();
+	}
+	private void initView() {
+		toolbar = findViewById(R.id.toolbar);
+		rgAssess = findViewById(R.id.rg_assess);
+		rgAssessOne = findViewById(R.id.rg_assess_one);
+		rgAssessTwo = findViewById(R.id.rg_assess_two);
+		rgAssessThree = findViewById(R.id.rg_assess_three);
+		etFeedback = findViewById(R.id.et_feedback);
+		btnSubmit = findViewById(R.id.btn_submit);
+	}
 }
