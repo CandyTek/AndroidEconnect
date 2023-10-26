@@ -12,7 +12,7 @@ import com.lzq.econnect.ui.activity.FileManagerPickActivity;
 @SuppressWarnings("unused")
 public class LzqFileManagerTool {
     private Activity mActivity;
-    private androidx.fragment.app.Fragment mSupportFragment;
+    private android.support.v4.app.Fragment mSupportFragment;
     private Fragment mFragment;
     private int mRequestCode;
     private String mRootPath;
@@ -29,7 +29,7 @@ public class LzqFileManagerTool {
         return this;
     }
 
-    public LzqFileManagerTool withSupportFragment(androidx.fragment.app.Fragment supportFragment){
+    public LzqFileManagerTool withSupportFragment(android.support.v4.app.Fragment supportFragment){
         if (mActivity != null || mFragment != null){
             throw new RuntimeException("you must start only by either activity or fragment, or supportFragment");
         }

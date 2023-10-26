@@ -4,13 +4,10 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
 import com.lzq.econnect.R;
 import com.lzq.econnect.utils.FileStorageUtils;
 import com.lzq.econnect.utils.UIUtil;
@@ -21,60 +18,53 @@ import com.lzq.econnect.utils.UIUtil;
  */
 public class SplashActivity extends AppCompatActivity {
 
-	private static final int REQUEST_PERMISSION_CODE = 100;
+    private static final int REQUEST_PERMISSION_CODE = 100;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_splash);
-		checkInitPermissions();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_splash);
+        checkInitPermissions();
+        UIUtil.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        }, 2000);
+    }
 
-		// UIUtil.postDelayed(new Runnable() {
-		//     @Override
-		//     public void run() {
-		//        
-		//     }
-		// }, 2000);
-	}
 
-	private void checkInitPermissions() {
+    private void checkInitPermissions(){
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			String[] permissions = new String[]{
-					Manifest.permission.WRITE_EXTERNAL_STORAGE,
-					Manifest.permission.READ_EXTERNAL_STORAGE
-			};
-			if (ContextCompat.checkSelfPermission(this,permissions[0]) != PackageManager.PERMISSION_GRANTED) {
-				if (ActivityCompat.shouldShowRequestPermissionRationale(this,permissions[0])) {
-					ActivityCompat.requestPermissions(this,permissions,REQUEST_PERMISSION_CODE);
-				} else {
-					ActivityCompat.requestPermissions(this,permissions,REQUEST_PERMISSION_CODE);
-				}
-			}else{
-				startMainactivity();
-			}
-		} else {
-			handleAfterPermissions();
-			startMainactivity();
-		}
-	}
-	
-	void startMainactivity(){
-		Intent intent = new Intent(SplashActivity.this,MainActivity.class);
-		startActivity(intent);
-		finish();
-	}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            String[] permissions = new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+            };
+            if (ContextCompat.checkSelfPermission(this, permissions[0]) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])){
+                    ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE);
+                }else{
+                    ActivityCompat.requestPermissions(this, permissions, REQUEST_PERMISSION_CODE);
+                }
+            }
+        } else {
+            handleAfterPermissions();
+        }
+    }
 
-	private void handleAfterPermissions() {
-		FileStorageUtils.initAppDir();
-	}
+    private void  handleAfterPermissions(){
+        FileStorageUtils.initAppDir();
+    }
 
-	@Override
-	public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults) {
-		super.onRequestPermissionsResult(requestCode,permissions,grantResults);
-		if (requestCode == REQUEST_PERMISSION_CODE) {
-			handleAfterPermissions();
-		}
-		startMainactivity();
-	}
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_PERMISSION_CODE){
+            handleAfterPermissions();
+        }
+    }
 }

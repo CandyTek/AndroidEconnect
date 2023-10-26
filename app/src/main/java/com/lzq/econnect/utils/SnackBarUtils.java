@@ -1,7 +1,7 @@
 package com.lzq.econnect.utils;
 
 import android.app.Activity;
-import com.google.android.material.snackbar.Snackbar;
+import android.support.design.widget.Snackbar;
 import android.view.View;
 
 /**

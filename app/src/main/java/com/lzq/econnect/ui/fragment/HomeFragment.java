@@ -1,7 +1,6 @@
 package com.lzq.econnect.ui.fragment;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -23,6 +22,7 @@ import com.lzq.econnect.utils.SPUtils;
 import com.lzq.econnect.utils.UIUtil;
 import com.lzq.econnect.view.dialog.CustomDialog;
 
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,294 +33,285 @@ import java.net.Socket;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import butterknife.Bind;
+
 /**
  * function: 主页Fragment
- * <p>
+ *
  * Created by lzq on 2017/3/19.
  */
-public class HomeFragment extends BaseFragment implements View.OnClickListener {
-	private ImageButton ibFileManager;
-	private ImageButton ibExternal;
-	private ImageButton ibConnect;
-	private ImageView ivConnectPc;
-	private ImageView ivUpload;
-	private ImageView ivHelper;
+public class HomeFragment extends BaseFragment implements View.OnClickListener{
 
-	// @Bind(R.id.ib_file_manager)
-	// ImageButton ibFileManager;
-	// @Bind(R.id.ib_external)
-	// ImageButton ibExternal;
-	// @Bind(R.id.ib_econnect)
-	// ImageButton ibConnect;
-	// @Bind(R.id.iv_connect_pc)
-	// ImageView ivConnectPc;
-	// @Bind(R.id.iv_helper)
-	// ImageView ivHelper;
-	// @Bind(R.id.iv_upload)
-	// ImageView ivUpload;
+    @Bind(R.id.ib_file_manager)
+    ImageButton ibFileManager;
+    @Bind(R.id.ib_external)
+    ImageButton ibExternal;
+    @Bind(R.id.ib_econnect)
+    ImageButton ibConnect;
+    @Bind(R.id.iv_connect_pc)
+    ImageView ivConnectPc;
+    @Bind(R.id.iv_helper)
+    ImageView ivHelper;
+    @Bind(R.id.iv_upload)
+    ImageView ivUpload;
 
-	@Override
-	public void onViewCreated(View view,Bundle savedInstanceState) {
-		super.onViewCreated(view,savedInstanceState);
-		
-	}
-	@Override
-	protected int setContentViewResId() {
-		return R.layout.fragment_home;
-	}
 
-	@Override
-	protected void doBusiness(View view) {
-		if (view != null)
-			initView(view);
-		ibFileManager.setOnClickListener(this);
-		ibExternal.setOnClickListener(this);
-		ibConnect.setOnClickListener(this);
-		ivConnectPc.setOnClickListener(this);
-		ivHelper.setOnClickListener(this);
-		ivUpload.setOnClickListener(this);
-	}
+    @Override
+    protected int setContentViewResId() {
+        return R.layout.fragment_home;
+    }
 
-	@Override
-	public void onClick(View view) {
-		int id = view.getId();
-		if (id == R.id.ib_file_manager) {
-			startActivity(new Intent(getActivity(),FileManagerActivity.class));
-		} else if (id == R.id.ib_external) {
-			openFilePicker();
-		} else if (id == R.id.ib_econnect) {
-			openSharedLocalPath();
-		} else if (id == R.id.iv_connect_pc) {
-			showDialog();
-		} else if (id == R.id.iv_upload) {
-			UIUtil.postDelayed(new Runnable() {
-				@Override
-				public void run() {
-					uploadFiles(new File(Configs.SHARED_LOCAL_PATH));
-				}
-			},0);
-		} else if (id == R.id.iv_helper) {
-			EventManager.post(new HomeIVHelperEvent());
-		}
-	}
+    @Override
+    protected void doBusiness() {
+        ibFileManager.setOnClickListener(this);
+        ibExternal.setOnClickListener(this);
+        ibConnect.setOnClickListener(this);
+        ivConnectPc.setOnClickListener(this);
+        ivHelper.setOnClickListener(this);
+        ivUpload.setOnClickListener(this);
+    }
 
-	private void openFilePicker() {
-		new LzqFileManagerTool().withActivity(getActivity())
-				.withRequestCode(1)
-				.start();
-	}
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.ib_file_manager:
+                startActivity(new Intent(getActivity(), FileManagerActivity.class));
+                break;
 
-	private void openSharedLocalPath() {
-		new LzqFileManagerTool().withActivity(getActivity())
-				.withRootPath(Configs.SHARED_LOCAL_PATH)
-				.withTitle(UIUtil.getString(R.string.e_connect))
-				.withRequestCode(1)
-				.start();
-	}
+            case R.id.ib_external:
+                openFilePicker();
+                break;
 
-	/**
-	 * 正则表达式验证ip地址：((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)
-	 * 端口号范围：0~65535之间
-	 * 如果连接成功，跳转到遥控电脑的界面
-	 */
-	private void showDialog() {
-		final CustomDialog dialog = new CustomDialog(getActivity());
-		final EditText ipEdt = dialog.getEtIp();
-		final EditText portEdt = dialog.getEtPort();
-		final EditText portEdt2 = dialog.getEtPort2();
+            case R.id.ib_econnect:
+                openSharedLocalPath();
+                break;
 
-		//设置默认的ip地址和默认的端口号
-		ipEdt.setText(UIUtil.getString(R.string.default_ip));
-		String spIp = SPUtils.getString(Constant.IP_KEY,null);
-		ipEdt.setText(spIp == null ? UIUtil.getString(R.string.default_ip) : spIp);
+            case R.id.iv_connect_pc:
+                showDialog();
+                break;
+            case R.id.iv_upload:
+                UIUtil.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        uploadFiles(new File(Configs.SHARED_LOCAL_PATH));
+                    }
+                }, 0);
 
-		portEdt.setText(UIUtil.getString(R.string.default_port1));
-		portEdt2.setText(UIUtil.getString(R.string.default_port2));
-		dialog.setOnPositiveListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				boolean isFormal = validateIPAndPort(ipEdt.getText().toString().trim(),portEdt.getText().toString().trim(),portEdt2.getText().toString().trim());
-				if (isFormal) {
+                break;
 
-					SPUtils.putString(Constant.IP_KEY,ipEdt.getText().toString().trim()); //保存ip地址到sp中
-					Log.e("ip:",Constant.IP);
-					Log.e("port:",Constant.UDP_PORT + "");
+            case R.id.iv_helper:
+                EventManager.post(new HomeIVHelperEvent());
+                break;
 
-					try {
+            default:
+                break;
 
-						Thread thread = new Thread(new Runnable() {
-							@Override
-							public void run() {
-								try {
-									InetAddress serverAddress = InetAddress.getByName(Constant.IP);
-									DatagramSocket socket = new DatagramSocket();
-									socket.connect(serverAddress,Constant.UDP_PORT);
-									if (socket.isConnected()) {
-										Log.e("thread","连接成功");
-										myHandler.sendEmptyMessage(100);
-									} else {
-										myHandler.sendEmptyMessage(10);
-									}
+        }
+    }
 
-								}
-								catch (IOException e) {
-									myHandler.sendEmptyMessage(10);
-								}
-							}
-						});
-						thread.start();
+    private void openFilePicker() {
+        new LzqFileManagerTool().withActivity(getActivity())
+                .withRequestCode(1)
+                .start();
+    }
 
-					}
-					catch (Exception e) {
-						e.printStackTrace();
-					}
+    private void openSharedLocalPath(){
+        new LzqFileManagerTool().withActivity(getActivity())
+                .withRootPath(Configs.SHARED_LOCAL_PATH)
+                .withTitle(UIUtil.getString(R.string.e_connect))
+                .withRequestCode(1)
+                .start();
+    }
 
-				} else {
-					//端口号验证
-					UIUtil.showToast(UIUtil.getString(R.string.port_input_tips));
-				}
-				dialog.dismiss();
-			}
-		});
 
-		dialog.setNegativeListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				dialog.dismiss();
-			}
-		});
+    /**
+     * 正则表达式验证ip地址：((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)
+     * 端口号范围：0~65535之间
+     * 如果连接成功，跳转到遥控电脑的界面
+     */
+    private void showDialog(){
+        final CustomDialog dialog = new CustomDialog(getActivity());
+        final EditText ipEdt = dialog.getEtIp();
+        final EditText portEdt = dialog.getEtPort();
+        final EditText portEdt2 = dialog.getEtPort2();
 
-		dialog.show();
-	}
+        //设置默认的ip地址和默认的端口号
+        ipEdt.setText(UIUtil.getString(R.string.default_ip));
+        String spIp = SPUtils.getString(Constant.IP_KEY, null);
+        ipEdt.setText(spIp == null ? UIUtil.getString(R.string.default_ip) : spIp);
 
-	private MyHandler myHandler = new MyHandler();
-	private void initView(View view) {
-		ibFileManager = view.findViewById(R.id.ib_file_manager);
-		ibExternal = view.findViewById(R.id.ib_external);
-		ibConnect = view.findViewById(R.id.ib_econnect);
-		ivConnectPc = view.findViewById(R.id.iv_connect_pc);
-		ivUpload = view.findViewById(R.id.iv_upload);
-		ivHelper = view.findViewById(R.id.iv_helper);
-	}
-	private static class MyHandler extends Handler {
-		@Override
-		public void handleMessage(Message msg) {
-			if (msg.what == 100) {
-				EventManager.post(new HomeConnectPCEvent(true));
-				UIUtil.showToast(UIUtil.getString(R.string.connect_success));
-			} else if (msg.what == 10) {
-				UIUtil.showToast(UIUtil.getString(R.string.connect_failure));
-			}
-		}
-	}
+        portEdt.setText(UIUtil.getString(R.string.default_port1));
+        portEdt2.setText(UIUtil.getString(R.string.default_port2));
+        dialog.setOnPositiveListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean isFormal = validateIPAndPort(ipEdt.getText().toString().trim(), portEdt.getText().toString().trim(), portEdt2.getText().toString().trim());
+                if (isFormal){
 
-	private boolean validateIPAndPort(String ip,String uPort,String tPort) {
+                    SPUtils.putString(Constant.IP_KEY, ipEdt.getText().toString().trim()); //保存ip地址到sp中
+                    Log.e("ip:", Constant.IP);
+                    Log.e("port:",  Constant.UDP_PORT + "");
 
-		String regexIp = "(\\d|[1-9]\\d|1\\d{2}|2[0-5][0-5])\\.(\\d|[1-9]\\d|1\\d{2}|2[0-5][0-5])\\.(\\d|[1-9]\\d|1\\d{2}|2[0-5][0-5])\\.(\\d|[1-9]\\d|1\\d{2}|2[0-5][0-5])";
-		Pattern pattern = Pattern.compile(regexIp);
-		Matcher matcher = pattern.matcher(ip);
-		if (!matcher.find()) {
-			return false;
-		}
-		int udpPort = 0;
-		int tcpPort = 0;
-		try {
-			udpPort = Integer.parseInt(uPort);
-			tcpPort = Integer.parseInt(tPort);
-			if (udpPort < 0 || udpPort > 65535) return false;
-		}
-		catch (Exception e) {
-			UIUtil.showToast(UIUtil.getString(R.string.port_out_bounds));
-		}
+                    try{
 
-		Constant.IP = ip;
-		Constant.UDP_PORT = udpPort;
-		Constant.TCP_PORT = tcpPort;
-		return true;
-	}
+                        Thread thread = new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    InetAddress serverAddress = InetAddress.getByName(Constant.IP);
+                                    DatagramSocket socket = new DatagramSocket();
+                                    socket.connect(serverAddress, Constant.UDP_PORT);
+                                    if (socket.isConnected()){
+                                        Log.e("thread", "连接成功");
+                                        myHandler.sendEmptyMessage(100);
+                                    }else{
+                                        myHandler.sendEmptyMessage(10);
+                                    }
 
-	//遍历某个目录下的所有文件上传
-	private void uploadFiles(File file) {
-		if (file.isFile()) {
-			new Thread(new TcpClient(file.getAbsolutePath())).start();
-		} else { //是目录
-			File[] files = file.listFiles();
-			if (files == null || files.length == 0) return;
-			for (File f : files) {
-				uploadFiles(f);
-			}
-		}
-	}
+                                } catch (IOException e) {
+                                    myHandler.sendEmptyMessage(10);
+                                }
+                            }
+                        });
+                        thread.start();
 
-	public static class TcpClient extends Socket implements Runnable {
-		private Socket client = null;
-		private FileInputStream fis = null;
-		private DataOutputStream dos = null;
-		private String mFilePath;
-		private int mRootPathLen = Configs.SHARED_LOCAL_PATH.length();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-		public TcpClient(String filePath) {
-			this.mFilePath = filePath;
-		}
+                }else{
+                    //端口号验证
+                    UIUtil.showToast(UIUtil.getString(R.string.port_input_tips));
+                }
+                dialog.dismiss();
+            }
+        });
 
-		public TcpClient(String filePath,int rootPathLen) {
-			this.mFilePath = filePath;
-			this.mRootPathLen = rootPathLen;
-		}
+        dialog.setNegativeListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
 
-		@Override
-		public void run() {
-			new TcpClient(mFilePath);
-			try {
-				client = new Socket(Constant.IP,Constant.TCP_PORT);
-				//向服务器端发送文件
+        dialog.show();
+    }
 
-				File file = new File(mFilePath);
-				if (!file.exists()) {
-					UIUtil.showToast(UIUtil.getString(R.string.file_not_exists));
-				}
-				fis = new FileInputStream(file);
-				dos = new DataOutputStream(client.getOutputStream());
-				dos.writeUTF(mFilePath.substring(mRootPathLen));
-				dos.flush();
-				dos.writeLong(file.length());
-				dos.flush();
+    private MyHandler myHandler = new MyHandler();
+    private static class MyHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+           if (msg.what == 100){
+               EventManager.post(new HomeConnectPCEvent(true));
+               UIUtil.showToast(UIUtil.getString(R.string.connect_success));
+           }else if (msg.what == 10){
+               UIUtil.showToast(UIUtil.getString(R.string.connect_failure));
+           }
+        }
+    }
 
-				//开始传输文件
-				byte[] bytes = new byte[1024 * 1024];
-				int len;
-				while ((len = fis.read(bytes)) != -1) {
-					dos.write(bytes,0,len);
-					dos.flush();
-				}
+    private boolean validateIPAndPort(String ip, String uPort, String tPort){
 
-				dos.flush();
+        String regexIp = "(\\d|[1-9]\\d|1\\d{2}|2[0-5][0-5])\\.(\\d|[1-9]\\d|1\\d{2}|2[0-5][0-5])\\.(\\d|[1-9]\\d|1\\d{2}|2[0-5][0-5])\\.(\\d|[1-9]\\d|1\\d{2}|2[0-5][0-5])";
+        Pattern pattern = Pattern.compile(regexIp);
+        Matcher matcher = pattern.matcher(ip);
+        if (!matcher.find()){
+            return false;
+        }
+        int udpPort = 0;
+        int tcpPort = 0;
+        try {
+            udpPort = Integer.parseInt(uPort);
+            tcpPort = Integer.parseInt(tPort);
+            if (udpPort < 0 || udpPort > 65535) return false;
+        }catch (Exception e){
+            UIUtil.showToast(UIUtil.getString(R.string.port_out_bounds));
+        }
 
-			}
-			catch (IOException e) {
-				Log.e("tcp","连接失败");
-				e.printStackTrace();
-			}
-			finally {
-				if (fis != null) {
-					try {
-						fis.close();
-					}
-					catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
+        Constant.IP = ip;
+        Constant.UDP_PORT = udpPort;
+        Constant.TCP_PORT = tcpPort;
+        return true;
+    }
 
-				if (dos != null) {
-					try {
-						dos.close();
-					}
-					catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-	}
+    //遍历某个目录下的所有文件上传
+    private void uploadFiles(File file){
+        if (file.isFile()){
+            new Thread(new TcpClient(file.getAbsolutePath())).start();
+        }else{ //是目录
+            File[] files = file.listFiles();
+            if (files == null || files.length == 0) return;
+            for (File f : files){
+                uploadFiles(f);
+            }
+        }
+    }
+
+    public static class TcpClient extends Socket implements Runnable{
+        private Socket client = null;
+        private FileInputStream fis = null;
+        private DataOutputStream dos = null;
+        private String mFilePath;
+        private int mRootPathLen = Configs.SHARED_LOCAL_PATH.length();
+
+        public TcpClient(String filePath){
+            this.mFilePath = filePath;
+        }
+
+        public TcpClient(String filePath, int rootPathLen){
+            this.mFilePath = filePath;
+            this.mRootPathLen = rootPathLen;
+        }
+
+        @Override
+        public void run() {
+            new TcpClient(mFilePath);
+            try {
+                client = new Socket(Constant.IP, Constant.TCP_PORT);
+                //向服务器端发送文件
+
+                File file = new File(mFilePath);
+                if (!file.exists()){
+                    UIUtil.showToast(UIUtil.getString(R.string.file_not_exists));
+                }
+                fis = new FileInputStream(file);
+                dos = new DataOutputStream(client.getOutputStream());
+                dos.writeUTF(mFilePath.substring(mRootPathLen));
+                dos.flush();
+                dos.writeLong(file.length());
+                dos.flush();
+
+                //开始传输文件
+                byte[] bytes = new byte[1024*1024];
+                int len;
+                while((len = fis.read(bytes)) != -1){
+                    dos.write(bytes, 0, len);
+                    dos.flush();
+                }
+
+                dos.flush();
+
+            } catch (IOException e) {
+                Log.e("tcp", "连接失败");
+                e.printStackTrace();
+            }finally {
+                if (fis != null){
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (dos != null){
+                    try {
+                        dos.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
 
 }
